@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[11]:
+# In[2]:
 
 
 """script"""
@@ -44,7 +44,7 @@ def run_linear_regression(local=False):
         print("Could not retrieve filename.")
         return
 
-    df = pd.read_csv(filename, nrows=10000).dropna()
+    df = pd.read_csv(filename).dropna()
     
     cols = ['01h', '02h', '03h', '04h', '05h', '06h', '07h', '08h',
        '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h',
@@ -112,9 +112,8 @@ def run_linear_regression(local=False):
     
     df_predict['NOM ESTACIO'] = le.transform(df_predict['NOM ESTACIO'])
     
-    predictions = regr.predict(df_predict[['month', 'year', 'NOM ESTACIO']])
+    predictions = regr.predict(df_predict[['day', 'NOM ESTACIO']])
     
-    print(predictions)
     filename = "logistic_regression.pickle" if local else "/data/outputs/result"
 
     with open(filename, "wb") as pickle_file:
@@ -124,7 +123,7 @@ def run_linear_regression(local=False):
 
 if __name__ == "__main__":
     local = len(sys.argv) == 2 and sys.argv[1] == "local"
-    run_linear_regression(True)
+    run_linear_regression(local)
 
 
 # In[ ]:
