@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
-9c820e0e5b3a4264aa5058f24a82386d.csv
+*.csv
 
 # Distribution / packaging
 .Python
