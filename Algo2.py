@@ -1,9 +1,17 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[11]:
+
+
 """script"""
 import json
 import os
 import pickle
 import sys
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestRegressor
@@ -36,21 +44,19 @@ def run_linear_regression(local=False):
         print("Could not retrieve filename.")
         return
 
-    df = pd.read_csv(filename)
-
+    df = pd.read_csv(filename, nrows=10000).dropna()
+    
     cols = ['01h', '02h', '03h', '04h', '05h', '06h', '07h', '08h',
        '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h',
        '19h', '20h', '21h', '22h', '23h', '24h']
-
+    
     df.DATA = pd.to_datetime(df.DATA, format="%d/%m/%Y")
 
     df['year'] = df.DATA.dt.year
     df['month'] = df.DATA.dt.month
     df['day'] = df.DATA.dt.day
 
-    df['sum_day'] = df[cols].sum(axis=1)
-
-    data = df[df['MAGNITUD'] == 8].groupby(['year', 'month', "NOM ESTACIO"])['sum_day'].agg(['mean']).reset_index()
+    data = df[df['MAGNITUD'] == 8].reset_index()
 
     le = preprocessing.LabelEncoder()
     le.fit(data['NOM ESTACIO'])
@@ -59,7 +65,7 @@ def run_linear_regression(local=False):
 
     regr = RandomForestRegressor(n_estimators=300,  random_state=0)
 
-    regr.fit(data[['month', 'year', 'NOM ESTACIO']], data['mean'])
+    regr.fit(data[['month', 'year', 'NOM ESTACIO'] + cols ], data[cols])
 
     Estacio_cols = ['Badalona', 'Barcelona (Poblenou)', 'Barcelona (St. Gervasi)',
        "L'Hospitalet de Llobregat", 'Montcada i Reixac',
@@ -101,11 +107,13 @@ def run_linear_regression(local=False):
        'Sitges (Vallcarca - Oficines)', 'Juneda (Pla del Molí)', 'Begur',
        'Santa Pau', 'Barcelona (Observatori Fabra)',
        'Vila-seca (IES Vila-seca)']
-
-    df_predict = pd.DataFrame({"month": list(range(2, 13)) * 96 + list(range(1, 13))  * 96 + [1] * 96, "year":[2023] *11*96 + [2024] * 12*96 + [2025] * 96, "NOM ESTACIO": Estacio_cols * 24 })
+    
+    df_predict = pd.DataFrame({"day": [x for x in range(15, 29)] * 96, "NOM ESTACIO": Estacio_cols * 14 })
+    
     df_predict['NOM ESTACIO'] = le.transform(df_predict['NOM ESTACIO'])
-
+    
     predictions = regr.predict(df_predict[['month', 'year', 'NOM ESTACIO']])
+    
     print(predictions)
     filename = "logistic_regression.pickle" if local else "/data/outputs/result"
 
@@ -116,4 +124,11 @@ def run_linear_regression(local=False):
 
 if __name__ == "__main__":
     local = len(sys.argv) == 2 and sys.argv[1] == "local"
-    run_linear_regression(local)
+    run_linear_regression(True)
+
+
+# In[ ]:
+
+
+
+
